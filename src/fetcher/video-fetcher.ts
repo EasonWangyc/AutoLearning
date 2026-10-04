@@ -12,6 +12,11 @@ const VIDEO_URL_PATTERNS = [
   /bilibili\.com\/video\//,
 ];
 
+/** Does this URL point at a video host the fetcher knows how to handle? */
+export function isVideoUrl(url: string): boolean {
+  return VIDEO_URL_PATTERNS.some((p) => p.test(url));
+}
+
 export interface VideoFetcherOptions {
   transcriber: string;
   tmpDir?: string;
@@ -23,7 +28,7 @@ export class VideoFetcher implements Fetcher {
   constructor(private options: VideoFetcherOptions) {}
 
   supports(url: string): boolean {
-    return VIDEO_URL_PATTERNS.some((p) => p.test(url));
+    return isVideoUrl(url);
   }
 
   async fetch(url: string): Promise<FetchResult> {

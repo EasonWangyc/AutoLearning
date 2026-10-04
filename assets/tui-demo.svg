@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="620" viewBox="0 0 1100 620" role="img" aria-label="AutoLearning 交互式向导截图">
+  <defs>
+    <linearGradient id="tbg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#161B22"/>
+      <stop offset="100%" stop-color="#0D1117"/>
+    </linearGradient>
+    <linearGradient id="tbar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1F2937"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1100" height="620" rx="16" fill="url(#tbg)" stroke="#30363D" stroke-width="1.5"/>
+  <path d="M0 16a16 16 0 0 1 16-16h1068a16 16 0 0 1 16 16v32H0z" fill="url(#tbar)"/>
+  <line x1="0" y1="48" x2="1100" y2="48" stroke="#30363D" stroke-width="1.5"/>
+
+  <circle cx="30" cy="24" r="7" fill="#FF5F57"/>
+  <circle cx="54" cy="24" r="7" fill="#FEBC2E"/>
+  <circle cx="78" cy="24" r="7" fill="#28C840"/>
+  <text x="550" y="29" text-anchor="middle" fill="#8B949E"
+        font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14">autolearn</text>
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'PingFang SC', 'Microsoft YaHei', monospace" font-size="17">
+    <!-- intro -->
+    <text x="30" y="96" fill="#6B7280">┌</text>
+    <text x="52" y="96" fill="#E6EDF3" font-weight="600">AutoLearning · 生成学习笔记</text>
+
+    <text x="30" y="130" fill="#6B7280">│</text>
+
+    <!-- prompt 1: source -->
+    <text x="30" y="164" fill="#22D3EE">◇</text>
+    <text x="52" y="164" fill="#E6EDF3">从哪里学习？</text>
+
+    <text x="30" y="198" fill="#6B7280">│</text>
+    <text x="52" y="198" fill="#22D3EE">●</text>
+    <text x="76" y="198" fill="#E6EDF3" font-weight="600">网址</text>
+    <text x="430" y="198" fill="#6B7280">网页 / 博客 / 视频</text>
+
+    <text x="30" y="232" fill="#6B7280">│</text>
+    <text x="52" y="232" fill="#4B5563">○</text>
+    <text x="76" y="232" fill="#8B949E">本地文件</text>
+    <text x="430" y="232" fill="#4B5563">.md / .txt / .html</text>
+
+    <text x="30" y="266" fill="#6B7280">│</text>
+    <text x="52" y="266" fill="#4B5563">○</text>
+    <text x="76" y="266" fill="#8B949E">粘贴文本</text>
+    <text x="430" y="266" fill="#4B5563">直接把内容粘进来</text>
+
+    <text x="30" y="300" fill="#6B7280">│</text>
+
+    <!-- prompt 2: provider -->
+    <text x="30" y="334" fill="#22D3EE">◇</text>
+    <text x="52" y="334" fill="#E6EDF3">使用哪个 AI 提供商？</text>
+
+    <text x="30" y="368" fill="#6B7280">│</text>
+    <text x="52" y="368" fill="#22D3EE">●</text>
+    <text x="76" y="368" fill="#E6EDF3" font-weight="600">deepseek</text>
+    <text x="430" y="368" fill="#6B7280">deepseek-chat · 配置默认</text>
+
+    <text x="30" y="402" fill="#6B7280">│</text>
+    <text x="52" y="402" fill="#4B5563">○</text>
+    <text x="76" y="402" fill="#8B949E">claude</text>
+    <text x="430" y="402" fill="#4B5563">claude-sonnet-4-6</text>
+
+    <text x="30" y="436" fill="#6B7280">│</text>
+    <text x="52" y="436" fill="#4B5563">○</text>
+    <text x="76" y="436" fill="#8B949E">ollama</text>
+    <text x="430" y="436" fill="#4B5563">llama3</text>
+
+    <text x="30" y="470" fill="#6B7280">│</text>
+
+    <!-- running -->
+    <text x="30" y="504" fill="#22D3EE">◐</text>
+    <text x="52" y="504" fill="#E6EDF3">抓取 → 清洗 → 生成笔记中…</text>
+
+    <text x="30" y="538" fill="#6B7280">│</text>
+
+    <!-- done -->
+    <text x="30" y="572" fill="#34D399">└</text>
+    <text x="52" y="572" fill="#34D399">完成！笔记已保存到</text>
+    <text x="52" y="598" fill="#7DD3FC">./notes/example-post-2026-10-04.md</text>
+  </g>
+</svg>

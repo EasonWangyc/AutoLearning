@@ -23,6 +23,7 @@ vi.mock('./transcriber/local-whisper', () => ({
 // Mock optimizer to avoid real LLM calls
 vi.mock('./optimizer/index', () => ({
   optimizeTranscript: vi.fn().mockImplementation((text: string) => Promise.resolve(text)),
+  fixTitle: vi.fn().mockImplementation((_text: string, title: string) => Promise.resolve(title)),
 }));
 
 import { runPipeline, runPipelineFromText } from './pipeline';

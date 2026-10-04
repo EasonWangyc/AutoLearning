@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { loadConfig } from './config';
+import { CONFIG_TEMPLATE, loadConfig, loadRawConfig, saveRawConfig } from './config';
+import { parse } from 'smol-toml';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -103,5 +104,63 @@ filename_template = "{title}-{date}.md"
 `);
     const config = loadConfig(configPath);
     expect(config.localWhisper?.modelSize).toBe('base');
+  });
+});
+
+describe('loadRawConfig / saveRawConfig', () => {
+  it('returns an empty object when the file does not exist', () => {
+    expect(loadRawConfig(path.join(configDir, 'missing.toml'))).toEqual({});
+  });
+
+  it('does not expand ${ENV_VAR} — the wizard must never read real secrets', () => {
+    process.env.TEST_KEY = 'actual-secret-value';
+    fs.writeFileSync(configPath, `
+[providers.deepseek]
+api_key = "\${TEST_KEY}"
+model = "deepseek-chat"
+`);
+    const raw = loadRawConfig(configPath);
+    const providers = raw.providers as Record<string, Record<string, string>>;
+    expect(providers.deepseek.api_key).toBe('${TEST_KEY}');
+  });
+
+  it('round-trips placeholders through save without substituting them', () => {
+    process.env.TEST_KEY = 'actual-secret-value';
+    fs.writeFileSync(configPath, `
+[provider]
+default = "deepseek"
+
+[providers.deepseek]
+api_key = "\${TEST_KEY}"
+model = "deepseek-chat"
+`);
+
+    const raw = loadRawConfig(configPath);
+    saveRawConfig(raw, configPath);
+
+    const onDisk = fs.readFileSync(configPath, 'utf-8');
+    expect(onDisk).toContain('${TEST_KEY}');
+    expect(onDisk).not.toContain('actual-secret-value');
+  });
+
+  it('creates parent directories when saving to a fresh path', () => {
+    const nested = path.join(configDir, 'a', 'b', 'config.toml');
+    saveRawConfig({ provider: { default: 'ollama' } }, nested);
+    expect(fs.existsSync(nested)).toBe(true);
+  });
+
+  it('ships a template that parses and loads into a usable Config', () => {
+    const templatePath = path.join(configDir, 'template.toml');
+    fs.writeFileSync(templatePath, CONFIG_TEMPLATE);
+
+    const raw = loadRawConfig(templatePath);
+    expect(parse(CONFIG_TEMPLATE)).toMatchObject({ provider: { default: 'deepseek' } });
+
+    // The template references ${DEEPSEEK_API_KEY}, which is unset in tests —
+    // it must still load rather than throw.
+    const config = loadConfig(templatePath);
+    expect(config.providers.deepseek?.model).toBe('deepseek-chat');
+    expect(config.output.filenameTemplate).toBe('{title}-{date}.md');
+    expect(raw.local_whisper).toMatchObject({ model_size: 'base' });
   });
 });

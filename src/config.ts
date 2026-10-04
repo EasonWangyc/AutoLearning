@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import { parse } from 'smol-toml';
+import { parse, stringify } from 'smol-toml';
 
 export interface ProviderConfig {
   apiKey?: string;
@@ -43,8 +43,54 @@ function normalizeProvider(raw: Record<string, unknown>): ProviderConfig {
   };
 }
 
+/** Starter config written by the interactive wizard on first run. */
+export const CONFIG_TEMPLATE = `[provider]
+default = "deepseek"
+
+[providers.deepseek]
+api_key = "\${DEEPSEEK_API_KEY}"
+model = "deepseek-chat"
+base_url = "https://api.deepseek.com/v1"
+
+[providers.ollama]
+base_url = "http://localhost:11434"
+model = "llama3"
+
+[output]
+directory = "./notes"
+filename_template = "{title}-{date}.md"
+
+[local_whisper]
+model_size = "base"
+`;
+
+export function resolveConfigPath(configPath?: string): string {
+  return configPath ?? path.join(os.homedir(), '.autolearning', 'config.toml');
+}
+
+/**
+ * Read the config file as raw TOML — no `${ENV_VAR}` expansion.
+ *
+ * The wizard edits through this rather than `loadConfig` so that writing the
+ * file back preserves placeholders instead of substituting the real secrets
+ * from the environment into a plaintext file on disk. Returns `{}` when the
+ * file does not exist yet, so callers can treat "no config" as an empty draft.
+ */
+export function loadRawConfig(configPath?: string): Record<string, unknown> {
+  const resolvedPath = resolveConfigPath(configPath);
+  if (!fs.existsSync(resolvedPath)) return {};
+  return parse(fs.readFileSync(resolvedPath, 'utf-8')) as Record<string, unknown>;
+}
+
+export function saveRawConfig(raw: Record<string, unknown>, configPath?: string): string {
+  const resolvedPath = resolveConfigPath(configPath);
+  fs.mkdirSync(path.dirname(resolvedPath), { recursive: true });
+  fs.writeFileSync(resolvedPath, stringify(raw), 'utf-8');
+  return resolvedPath;
+}
+
 export function loadConfig(configPath?: string): Config {
-  const resolvedPath = configPath ?? path.join(os.homedir(), '.autolearning', 'config.toml');
+  const resolvedPath = resolveConfigPath(configPath);
   if (!fs.existsSync(resolvedPath)) {
     throw new Error(`Config file not found: ${resolvedPath}`);
   }

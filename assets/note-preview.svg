@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="620" viewBox="0 0 1100 620" role="img" aria-label="生成的 Markdown 笔记示例">
+  <defs>
+    <linearGradient id="pbg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#161B22"/>
+      <stop offset="100%" stop-color="#0D1117"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1100" height="620" rx="16" fill="url(#pbg)" stroke="#30363D" stroke-width="1.5"/>
+  <path d="M0 16a16 16 0 0 1 16-16h1068a16 16 0 0 1 16 16v32H0z" fill="#1F2937"/>
+  <line x1="0" y1="48" x2="1100" y2="48" stroke="#30363D" stroke-width="1.5"/>
+  <circle cx="30" cy="24" r="7" fill="#FF5F57"/>
+  <circle cx="54" cy="24" r="7" fill="#FEBC2E"/>
+  <circle cx="78" cy="24" r="7" fill="#28C840"/>
+  <text x="550" y="29" text-anchor="middle" fill="#8B949E"
+        font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14">notes/example-post-2026-10-04.md</text>
+
+  <g font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+    <!-- Title -->
+    <text x="48" y="102" fill="#E6EDF3" font-size="30" font-weight="700">事件循环：运行时而非库</text>
+    <line x1="48" y1="126" x2="1052" y2="126" stroke="#30363D" stroke-width="1.5"/>
+
+    <!-- TL;DR callout -->
+    <rect x="48" y="150" width="1004" height="72" rx="8" fill="#0EA5E9" fill-opacity="0.08" stroke="#38BDF8" stroke-opacity="0.35"/>
+    <rect x="48" y="150" width="4" height="72" rx="2" fill="#38BDF8"/>
+    <text x="72" y="180" fill="#7DD3FC" font-size="15" font-weight="700">TL;DR</text>
+    <text x="72" y="206" fill="#C9D1D9" font-size="16">事件循环是运行时构造而非库——脚本执行完自动进入，无回调时自动退出。</text>
+
+    <!-- Section -->
+    <text x="48" y="268" fill="#E6EDF3" font-size="21" font-weight="600">与线程模型的对比</text>
+
+    <!-- Table -->
+    <rect x="48" y="292" width="1004" height="44" rx="6" fill="#1F2937"/>
+    <g font-size="15" fill="#8B949E">
+      <text x="68" y="320">特性</text>
+      <text x="300" y="320">传统线程模型</text>
+      <text x="640" y="320">Node.js 事件驱动</text>
+    </g>
+    <line x1="48" y1="336" x2="1052" y2="336" stroke="#30363D" stroke-width="1"/>
+    <g font-size="15" fill="#C9D1D9">
+      <text x="68" y="366">并发处理</text>
+      <text x="300" y="366" fill="#8B949E">每连接一个线程</text>
+      <text x="640" y="366">单线程 + 回调</text>
+      <text x="68" y="400">死锁风险</text>
+      <text x="300" y="400" fill="#8B949E">存在锁竞争</text>
+      <text x="640" y="400" fill="#34D399">无锁设计</text>
+    </g>
+    <line x1="48" y1="380" x2="1052" y2="380" stroke="#21262D" stroke-width="1"/>
+
+    <!-- Code block -->
+    <rect x="48" y="432" width="1004" height="120" rx="8" fill="#0B1020" stroke="#30363D" stroke-width="1"/>
+    <text x="64" y="456" fill="#6B7280" font-size="12"
+          font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">mermaid</text>
+    <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14">
+      <text x="64" y="484" fill="#C4B5FD">flowchart</text>
+      <text x="160" y="484" fill="#7DD3FC">LR</text>
+      <text x="64" y="508" fill="#C9D1D9">    A[执行脚本] --&gt; B{还有回调?}</text>
+      <text x="64" y="532" fill="#C9D1D9">    B --&gt;|<tspan fill="#F9A8D4">是</tspan>| C[事件循环]</text>
+    </g>
+
+    <!-- Footer -->
+    <text x="48" y="592" fill="#6B7280" font-size="14">由 AutoLearning 生成 · 自动过滤 AI 客套话 · 末尾附源链接</text>
+  </g>
+</svg>

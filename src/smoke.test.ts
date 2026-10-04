@@ -121,6 +121,80 @@ filename_template = "{title}.md"
     expect(result.stdout).toContain('autolearn');
   }, 30_000);
 
+  it('CLI --help advertises the config subcommand', () => {
+    const result = spawnSync('npx', ['tsx', 'src/cli.ts', '--help'], {
+      encoding: 'utf-8',
+      timeout: 30_000,
+    });
+    expect(result.stdout).toContain('config');
+  }, 30_000);
+
+  it('CLI config --init honours -c placed after the subcommand', () => {
+    // Regression: commander resolves a flag declared on both the root and the
+    // subcommand into the root's store, so reading plain `options` silently
+    // fell back to ~/.autolearning/config.toml.
+    const target = path.join(testDir, 'init-after.toml');
+    const result = spawnSync('npx', ['tsx', 'src/cli.ts', 'config', '--init', '-c', target], {
+      encoding: 'utf-8',
+      timeout: 30_000,
+    });
+    expect(result.status).toBe(0);
+    expect(fs.existsSync(target)).toBe(true);
+    expect(fs.readFileSync(target, 'utf-8')).toContain('[local_whisper]');
+  }, 30_000);
+
+  it('CLI config --init honours -c placed before the subcommand', () => {
+    const target = path.join(testDir, 'init-before.toml');
+    const result = spawnSync('npx', ['tsx', 'src/cli.ts', '-c', target, 'config', '--init'], {
+      encoding: 'utf-8',
+      timeout: 30_000,
+    });
+    expect(result.status).toBe(0);
+    expect(fs.existsSync(target)).toBe(true);
+  }, 30_000);
+
+  it('CLI config --init refuses to clobber an existing file', () => {
+    const target = path.join(testDir, 'existing.toml');
+    fs.writeFileSync(target, '[provider]\ndefault = "ollama"\n');
+    const result = spawnSync('npx', ['tsx', 'src/cli.ts', 'config', '--init', '-c', target], {
+      encoding: 'utf-8',
+      timeout: 30_000,
+    });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('already exists');
+    expect(fs.readFileSync(target, 'utf-8')).toContain('ollama');
+  }, 30_000);
+
+  it('CLI advertises html as an output format', () => {
+    const result = spawnSync('npx', ['tsx', 'src/cli.ts', '--help'], {
+      encoding: 'utf-8',
+      timeout: 30_000,
+    });
+    expect(result.stdout).toContain('md, html, pdf');
+  }, 30_000);
+
+  it('CLI rejects an unknown --format before doing any work', () => {
+    // Runs before config loading and before the pipeline, so this needs
+    // neither a config file nor an API key.
+    const result = spawnSync('npx', ['tsx', 'src/cli.ts', 'https://example.com', '--format', 'docx'], {
+      encoding: 'utf-8',
+      timeout: 30_000,
+    });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('Unknown format "docx"');
+    expect(result.stderr).toContain('md, html, pdf');
+  }, 30_000);
+
+  it('CLI with no args and no TTY errors instead of hanging on a prompt', () => {
+    const result = spawnSync('npx', ['tsx', 'src/cli.ts'], {
+      encoding: 'utf-8',
+      timeout: 30_000,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('Please provide a URL');
+  }, 30_000);
+
   it('Fetcher routing: auto and explicit types', () => {
     const videoFetcher = getFetcher('https://youtube.com/watch?v=test', 'auto');
     expect(videoFetcher.constructor.name).toBe('VideoFetcher');
