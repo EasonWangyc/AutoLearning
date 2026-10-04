@@ -10,6 +10,7 @@
 <div align="center">
   <img src="https://img.shields.io/badge/Built%20with-Claude%20Code-orange" alt="Built with Claude Code">
   <img src="https://img.shields.io/badge/version-0.1.0-blue?style=flat-square" alt="version">
+  <img src="https://img.shields.io/badge/license-Apache--2.0-blue?style=flat-square" alt="license">
   <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript">
   <img src="https://img.shields.io/badge/Node.js-%E2%89%A520.12-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node.js">
   <img src="https://img.shields.io/badge/LLM-DeepSeek%20%7C%20Claude%20%7C%20OpenAI%20%7C%20Ollama-8B5CF6?style=flat-square" alt="LLM backends">
@@ -28,8 +29,7 @@
   <a href="#how">工作原理</a> ·
   <a href="#output">输出格式</a> ·
   <a href="#config">配置</a> ·
-  <a href="#stack">技术栈</a> ·
-  <a href="#dev">开发</a>
+  <a href="#stack">技术栈</a>
 </p>
 
 ---
@@ -290,7 +290,7 @@ model_size = "base"          # tiny | base | small | medium | large
 | 配置 | smol-toml（TOML + `${ENV}` 展开） |
 | LLM | Anthropic SDK · OpenAI SDK（兼容 DeepSeek）· Ollama HTTP API |
 | 语音转写 | faster-whisper（Python，本地 CPU int8） |
-| 测试 | Vitest（119 个用例，全部 mock 外部调用） |
+| 测试 | Vitest |
 | PDF 导出 | pandoc + xelatex |
 
 ---
@@ -307,7 +307,7 @@ src/
 ├── pipeline.ts               # 串联所有模块，两个入口：URL / 纯文本
 ├── config.ts                 # TOML 读写（loadConfig 展开 ENV，loadRawConfig 不展开）
 ├── history.ts                # URL → 笔记 的去重记录
-├── progress.ts               # Progress 接口：stderr 默认实现 + 测试用静默实现
+├── progress.ts               # Progress 接缝：stderr / TUI spinner / 静默三种实现
 ├── types.ts
 ├── fetcher/                  # URL → 文本（策略模式）
 │   ├── index.ts              #   getFetcher 路由：auto 按 URL 特征选
@@ -344,22 +344,6 @@ src/
 
 ---
 
-<a name="dev"></a>
-## 🧪 开发
-
-```bash
-pnpm dev                  # 开发运行（tsx）
-pnpm build                # 构建到 dist/（TUI 自动拆成懒加载 chunk）
-pnpm test                 # 全部测试
-pnpm test:watch           # 监听模式
-pnpm test src/tui         # 跑单个模块的测试
-pnpm exec tsc --noEmit    # 类型检查
-```
-
-测试全部 mock 掉网络与子进程，不需要 API Key 也能跑。
-
----
-
 <a name="roadmap"></a>
 ## 🗺️ Roadmap
 
@@ -367,10 +351,10 @@ pnpm exec tsc --noEmit    # 类型检查
 - [x] 视频字幕 / 本地 Whisper 双路径
 - [x] 多 LLM 后端
 - [x] 交互式向导 + 配置编辑器
-- [ ] 笔记库检索与回看（`autolearn list` / `search`）
 - [x] HTML 导出（Mermaid / LaTeX / 深浅色自适应）
 - [ ] 自带目录（TOC）与锚点跳转
 - [ ] `--format html --offline`：把 Mermaid / KaTeX 内联进文件，断网也能看图
+- [ ] 笔记库检索与回看（`autolearn list` / `search`）
 - [ ] Obsidian / Notion 导出
 - [ ] 同一 URL 的增量更新（源文有更新时只补差异）
 - [ ] 接入 OpenAI Whisper API / 阿里云转写（实现已存在，未接进 pipeline）
@@ -390,24 +374,9 @@ pnpm exec tsc --noEmit    # 类型检查
 
 ---
 
-<a name="contributing"></a>
-## 🤝 贡献
-
-Issue 和 PR 都欢迎。改动前建议先开个 issue 对一下方向，避免白写。
-
-```bash
-pnpm test && pnpm exec tsc --noEmit    # 提交前请确保这两条都过
-```
-
----
-
 <a name="license"></a>
 ## 📄 License
 
-本项目目前**没有添加开源许可证**。在补上之前，默认保留所有权利，他人不可合法复制、修改或分发。
+[Apache-2.0](LICENSE) © 2026 EasonWangyc
 
-如果希望别人能自由使用，推荐补一个 [MIT](https://choosealicense.com/licenses/mit/) 或 [Apache-2.0](https://choosealicense.com/licenses/apache-2.0/)：
-
-```bash
-# GitHub 网页端：Add file → Create new file → 文件名输入 LICENSE → 选择模板
-```
+可自由使用、修改、分发（含商用）；需保留版权声明与许可证副本。
