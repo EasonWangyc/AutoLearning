@@ -10,11 +10,41 @@ const VIDEO_URL_PATTERNS = [
   /youtube\.com\/watch\?v=/,
   /youtu\.be\//,
   /bilibili\.com\/video\//,
+  // A watch-later link carries the real video id in `bvid`/`oid`; auto mode
+  // must send it to yt-dlp instead of the article fetcher.
+  /bilibili\.com\/list\/watchlater/,
 ];
 
 /** Does this URL point at a video host the fetcher knows how to handle? */
 export function isVideoUrl(url: string): boolean {
   return VIDEO_URL_PATTERNS.some((p) => p.test(url));
+}
+
+/**
+ * Turn a Bilibili watch-later/list URL into the canonical video URL.
+ *
+ * `https://www.bilibili.com/list/watchlater?oid=<aid>&bvid=BV...` renders an
+ * empty playlist page unless the user is logged in — and when it is empty the
+ * page title is literally "视频去哪了？…". Auto mode used to treat it as an
+ * article and summarize that error page. yt-dlp understands both the BV and av
+ * forms, so rewriting keeps the run on the video path even if the original URL
+ * only carries `oid`.
+ */
+export function normalizeVideoUrl(url: string): string {
+  if (!/bilibili\.com\/list\/watchlater/.test(url)) return url;
+
+  const params = new URL(url).searchParams;
+  const bvid = params.get('bvid');
+  if (bvid && /^BV[0-9A-Za-z]+$/i.test(bvid)) {
+    return `https://www.bilibili.com/video/${bvid}`;
+  }
+
+  const oid = params.get('oid');
+  if (oid && /^\d+$/.test(oid)) {
+    return `https://www.bilibili.com/video/av${oid}`;
+  }
+
+  return url;
 }
 
 export interface VideoFetcherOptions {
@@ -32,11 +62,12 @@ export class VideoFetcher implements Fetcher {
   }
 
   async fetch(url: string): Promise<FetchResult> {
-    const videoTitle = this.extractTitle(url);
+    const videoUrl = normalizeVideoUrl(url);
+    const videoTitle = this.extractTitle(videoUrl);
 
     // Fast path: try embedded subtitles first
     try {
-      const subtitles = this.extractSubtitles(url);
+      const subtitles = this.extractSubtitles(videoUrl);
       return {
         title: videoTitle,
         rawText: subtitles,
@@ -53,7 +84,7 @@ export class VideoFetcher implements Fetcher {
     }
 
     console.error('No subtitles found, downloading audio for transcription...');
-    const audioPath = this.downloadAudio(url);
+    const audioPath = this.downloadAudio(videoUrl);
 
     console.error('Transcribing audio...');
     const transcript = await this.options.transcriberInstance.transcribe(audioPath);

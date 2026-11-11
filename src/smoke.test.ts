@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { loadConfig } from './config';
 import { parseContent } from './parser/index';
@@ -194,6 +195,32 @@ filename_template = "{title}.md"
     expect(result.status).toBe(1);
     expect(result.stderr).toContain('Please provide a URL');
   }, 30_000);
+
+  it('CLI exits even when a dependency leaves a handle open', () => {
+    // Regression: SDK keep-alive sockets / a resumed stdin used to keep the
+    // process alive after the note was written. exitSoon() must force it down.
+    const exitModule = fileURLToPath(new URL('./exit.ts', import.meta.url));
+    const script = path.join(testDir, 'leaky-cli.ts');
+    fs.writeFileSync(
+      script,
+      `import { exitSoon } from ${JSON.stringify(exitModule)};
+setInterval(() => {}, 60_000); // stand-in for a lingering dependency handle
+console.log('work done');
+exitSoon(0);
+`,
+    );
+
+    const started = Date.now();
+    const result = spawnSync('npx', ['tsx', script], {
+      encoding: 'utf-8',
+      timeout: 15_000,
+    });
+
+    expect(result.error).toBeUndefined();
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain('work done');
+    expect(Date.now() - started).toBeLessThan(10_000);
+  }, 20_000);
 
   it('Fetcher routing: auto and explicit types', () => {
     const videoFetcher = getFetcher('https://youtube.com/watch?v=test', 'auto');

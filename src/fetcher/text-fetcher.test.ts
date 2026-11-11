@@ -65,6 +65,26 @@ describe('TextFetcher', () => {
     global.fetch = undefined as any;
   });
 
+  it('rejects Bilibili error pages instead of treating them as articles', async () => {
+    mockExecFileSync.mockImplementation(() => {
+      throw new Error('curl failed');
+    });
+
+    const errorPage = `<html><head><title>视频去哪了？-创建者去哪了？-播单去哪了？-哔哩哔哩视频</title></head><body><article><p>播单列表请求错误：请登录后再查看稍后再看列表</p></article></body></html>`;
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      text: () => Promise.resolve(errorPage),
+    });
+
+    const { TextFetcher } = await import('./text-fetcher');
+    const fetcher = new TextFetcher();
+    await expect(
+      fetcher.fetch('https://www.bilibili.com/list/watchlater?oid=117361155771330'),
+    ).rejects.toThrow(/error instead of content/);
+
+    global.fetch = undefined as any;
+  });
+
   it('throws when both strategies fail', async () => {
     mockExecFileSync.mockImplementation(() => {
       throw new Error('curl failed');

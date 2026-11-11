@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { VideoFetcher } from './video-fetcher';
+import { VideoFetcher, normalizeVideoUrl } from './video-fetcher';
 
 describe('VideoFetcher', () => {
   let fetcher: VideoFetcher;
@@ -12,6 +12,25 @@ describe('VideoFetcher', () => {
     expect(fetcher.supports('https://www.youtube.com/watch?v=dQw4w9WgXcQ')).toBe(true);
     expect(fetcher.supports('https://youtu.be/dQw4w9WgXcQ')).toBe(true);
     expect(fetcher.supports('https://www.bilibili.com/video/BV1xx411c7mD')).toBe(true);
+  });
+
+  it('supports bilibili watch-later URLs and normalizes them to video URLs', () => {
+    const withBvid =
+      'https://www.bilibili.com/list/watchlater?oid=117361155771330&bvid=BV1T2Yc6iE3o';
+    const oidOnly = 'https://www.bilibili.com/list/watchlater?oid=117361155771330';
+
+    expect(fetcher.supports(withBvid)).toBe(true);
+    expect(fetcher.supports(oidOnly)).toBe(true);
+    expect(normalizeVideoUrl(withBvid)).toBe(
+      'https://www.bilibili.com/video/BV1T2Yc6iE3o',
+    );
+    expect(normalizeVideoUrl(oidOnly)).toBe(
+      'https://www.bilibili.com/video/av117361155771330',
+    );
+    expect(normalizeVideoUrl('https://www.bilibili.com/video/BV1T2Yc6iE3o')).toBe(
+      'https://www.bilibili.com/video/BV1T2Yc6iE3o',
+    );
+    expect(normalizeVideoUrl('https://example.com/blog')).toBe('https://example.com/blog');
   });
 
   it('does not support regular article URLs', () => {

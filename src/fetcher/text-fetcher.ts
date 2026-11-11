@@ -25,6 +25,28 @@ function isAuthWall(text: string): boolean {
   return markers.some((m) => lower.includes(m));
 }
 
+/**
+ * Pages that look like content but are actually Bilibili's error/empty states.
+ *
+ * The watch-later page without login returns HTTP 200 with the title
+ * "视频去哪了？-创建者去哪了？-播单去哪了？" and a "请登录后再查看" body.
+ * Readability happily extracts that as an article, so it must be rejected
+ * explicitly — otherwise the note is a summary of Bilibili's error page.
+ */
+const ERROR_PAGE_MARKERS = [
+  '视频去哪了',
+  '播单列表请求错误',
+  '无法获取播单信息',
+  '该视频不存在',
+  '视频已失效',
+  '稿件不可见',
+];
+
+function isErrorPage(title: string, text: string): boolean {
+  const haystack = `${title}\n${text}`;
+  return ERROR_PAGE_MARKERS.some((m) => haystack.includes(m));
+}
+
 export class TextFetcher implements Fetcher {
   private cookieFile: string | null = null;
 
@@ -76,13 +98,18 @@ export class TextFetcher implements Fetcher {
           return;
         }
 
-        // Detect login walls / captcha pages from r.jina.ai
+        // Detect login walls / captcha / error pages from r.jina.ai
         if (isAuthWall(stdout)) {
           resolve(null);
           return;
         }
 
         const title = this.extractTitleFromMarkdown(stdout) ?? url;
+        if (isErrorPage(title, stdout)) {
+          resolve(null);
+          return;
+        }
+
         resolve({ title, rawText: stdout.trim() });
       } catch (err) {
         reject(err);
@@ -125,6 +152,7 @@ export class TextFetcher implements Fetcher {
       const reader = new Readability(dom.window.document);
       const article = reader.parse();
       if (article?.textContent && article.textContent.trim().length > 50) {
+        if (isErrorPage(article.title ?? title, article.textContent)) return null;
         return { title, rawText: article.textContent.trim() };
       }
     } catch {
@@ -135,6 +163,7 @@ export class TextFetcher implements Fetcher {
     const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
     const bodyText = bodyMatch?.[1]?.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() ?? '';
     if (bodyText.length > 100) {
+      if (isErrorPage(title, bodyText)) return null;
       return { title, rawText: bodyText };
     }
     return null;
@@ -207,10 +236,17 @@ export class TextFetcher implements Fetcher {
       const reader = new Readability(dom.window.document);
       const article = reader.parse();
 
-      return {
-        title: article?.title ?? dom.window.document.title ?? 'Untitled',
-        rawText: article?.textContent ?? dom.window.document.body?.textContent ?? '',
-      };
+      const title = article?.title ?? dom.window.document.title ?? 'Untitled';
+      const rawText = article?.textContent ?? dom.window.document.body?.textContent ?? '';
+      if (isErrorPage(title, rawText)) {
+        throw new Error(
+          `The page returned an error instead of content: "${title}". ` +
+            'For a Bilibili video, use the canonical https://www.bilibili.com/video/BV... URL, ' +
+            'add --cookies-from-browser firefox when it needs login, and quote URLs containing "&".',
+        );
+      }
+
+      return { title, rawText };
     } finally {
       clearTimeout(timeout);
     }

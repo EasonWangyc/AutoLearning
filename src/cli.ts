@@ -9,6 +9,7 @@ import { convertToPdf } from './output/convert';
 import { convertToHtml } from './output/html';
 import { OUTPUT_FORMATS, exportPathFor, parseFormat } from './output/format';
 import { loadHistory, recordHistory } from './history';
+import { exitSoon } from './exit';
 import type { NoteOutput } from './types';
 
 /**
@@ -44,6 +45,7 @@ program
         const { isInteractive } = await loadTui();
         if (isInteractive()) {
           await runWizardOrCreateConfig(options.config);
+          exitSoon(0);
           return;
         }
       }
@@ -83,6 +85,7 @@ program
         });
 
         handleOutput(result, options);
+        exitSoon(0);
         return;
       }
 
@@ -97,6 +100,7 @@ program
       if (history[cleanUrl] && !options.force) {
         console.error(`Already processed on ${history[cleanUrl].date}: ${history[cleanUrl].file}`);
         console.error('Use --force to re-process.');
+        exitSoon(0);
         return;
       }
 
@@ -112,12 +116,13 @@ program
 
       recordHistory(cleanUrl, result.filePath);
       handleOutput(result, options);
+      exitSoon(0);
     } catch (error) {
       console.error(`Error: ${(error as Error).message}`);
       if (options.verbose && error instanceof Error) {
         console.error(error.stack);
       }
-      process.exit(1);
+      exitSoon(1);
     }
   });
 
@@ -154,10 +159,12 @@ program
         const resolved = resolveConfigPath(configPath);
         if (fs.existsSync(resolved)) {
           console.error(`Config already exists: ${resolved}`);
-          process.exit(1);
+          exitSoon(1);
+          return;
         }
         saveRawConfig(parse(CONFIG_TEMPLATE) as Record<string, unknown>, configPath);
         console.log(`Created ${resolved}`);
+        exitSoon(0);
         return;
       }
 
@@ -165,13 +172,15 @@ program
       if (!isInteractive()) {
         console.error('The config wizard needs an interactive terminal.');
         console.error('Use `autolearn config --init` to write a starter config instead.');
-        process.exit(1);
+        exitSoon(1);
+        return;
       }
 
       await runConfigWizard({ configPath });
+      exitSoon(0);
     } catch (error) {
       console.error(`Error: ${(error as Error).message}`);
-      process.exit(1);
+      exitSoon(1);
     }
   });
 
